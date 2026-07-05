@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: html (title='Dashboard', activePage='dashboard', content=~{::section})}">
+<head>
+</head>
+<body>
+    <section>
+        
+        <!-- Alerts for feedback -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Employee Info Card -->
+        <div class="card card-minimal border-0 p-4 mb-4" th:if="${selectedEmployee != null}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-indigo-light text-indigo rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-badge fs-2"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 mb-1 fw-bold" th:text="${selectedEmployee.name}"></h2>
+                            <p class="text-secondary mb-0" th:text="${selectedEmployee.designation} + ' &bull; ' + ${selectedEmployee.department}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0 border-start-md">
+                    <span class="text-secondary small d-block">Monthly Base Salary</span>
+                    <span class="fs-4 fw-bold text-dark" th:text="'$' + ${#numbers.formatDecimal(selectedEmployee.baseSalary, 1, 'COMMA', 2, 'POINT')}"></span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedEmployee == null}" class="text-center py-5">
+            <i class="bi bi-people text-muted display-4"></i>
+            <p class="mt-3">No employees found. Please set up data in the database.</p>
+        </div>
+
+        <div th:if="${selectedEmployee != null}">
+            <!-- Leave Balance Stats Row -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card card-minimal p-4 text-center">
+                        <div class="stat-value text-indigo" th:text="${selectedEmployee.allowedLeaves}">15</div>
+                        <div class="stat-label mt-2">Allowed Annual Leaves</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-minimal p-4 text-center">
+                        <div class="stat-value text-secondary" th:text="${selectedEmployee.allowedLeaves - selectedEmployee.remainingLeaves}">0</div>
+                        <div class="stat-label mt-2">Leaves Utilized</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-minimal p-4 text-center">
+                        <div class="stat-value text-success" th:text="${selectedEmployee.remainingLeaves}">15</div>
+                        <div class="stat-label mt-2">Leaves Remaining</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Recent Leaves Section -->
+                <div class="col-lg-7">
+                    <div class="card card-minimal border-0 h-100">
+                        <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                            <h3 class="h5 mb-0 fw-bold"><i class="bi bi-calendar2-check text-indigo me-2"></i>Recent Leave Requests</h3>
+                            <a th:href="@{/leaves}" class="btn btn-sm btn-light border rounded-pill px-3">
+                                Apply Leave <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" th:if="${leaveRequests != null && !leaveRequests.isEmpty()}">
+                                <table class="table table-clean mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Duration</th>
+                                            <th>Total Days</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="leave : ${leaveRequests}">
+                                            <td>
+                                                <span class="fw-medium text-dark" th:text="${leave.leaveType}">CASUAL</span>
+                                            </td>
+                                            <td>
+                                                <span class="small text-secondary" th:text="${#temporals.format(leave.startDate, 'dd MMM yyyy')} + ' - ' + ${#temporals.format(leave.endDate, 'dd MMM yyyy')}"></span>
+                                            </td>
+                                            <td class="text-center" th:text="${leave.totalDays}">1</td>
+                                            <td>
+                                                <span class="badge-soft badge-soft-pending" th:if="${leave.status.name() == 'PENDING'}">
+                                                    <i class="bi bi-clock-history"></i> Pending
+                                                </span>
+                                                <span class="badge-soft badge-soft-approved" th:if="${leave.status.name() == 'APPROVED'}">
+                                                    <i class="bi bi-check-circle"></i> Approved
+                                                </span>
+                                                <span class="badge-soft badge-soft-rejected" th:if="${leave.status.name() == 'REJECTED'}">
+                                                    <i class="bi bi-x-circle"></i> Rejected
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center py-5 text-secondary" th:if="${leaveRequests == null || leaveRequests.isEmpty()}">
+                                <i class="bi bi-calendar-x display-6 text-muted mb-2"></i>
+                                <p class="mb-0">No leave requests submitted yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payroll Section -->
+                <div class="col-lg-5">
+                    <div class="card card-minimal border-0 h-100">
+                        <div class="card-header bg-white border-bottom p-4">
+                            <h3 class="h5 mb-0 fw-bold"><i class="bi bi-cash-coin text-indigo me-2"></i>Payroll History</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" th:if="${payslips != null && !payslips.isEmpty()}">
+                                <table class="table table-clean mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Net Salary</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Payslip</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="slip : ${payslips}">
+                                            <td>
+                                                <span class="fw-semibold text-dark" th:text="${slip.payPeriod}">July 2026</span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-medium text-dark" th:text="'$' + ${#numbers.formatDecimal(slip.netSalary, 1, 'COMMA', 2, 'POINT')}"></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-soft badge-soft-paid" th:if="${slip.status.name() == 'PAID'}">
+                                                    Paid
+                                                </span>
+                                                <span class="badge-soft badge-soft-pending" th:if="${slip.status.name() == 'PENDING'}">
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a th:href="@{/payslip/{id}(id=${slip.id})}" target="_blank" class="btn btn-sm btn-outline-secondary border rounded-pill px-2.5">
+                                                    <i class="bi bi-printer"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center py-5 text-secondary" th:if="${payslips == null || payslips.isEmpty()}">
+                                <i class="bi bi-receipt-cutoff display-6 text-muted mb-2"></i>
+                                <p class="mb-0">No payslips generated for this period.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</body>
+</html>
