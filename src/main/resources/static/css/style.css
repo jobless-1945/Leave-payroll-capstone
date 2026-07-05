@@ -168,3 +168,16 @@ body {
 .cursor-pointer {
     cursor: pointer;
 }
+
+.btn-outline-indigo {
+    color: var(--primary-indigo) !important;
+    border-color: var(--primary-indigo) !important;
+    background-color: transparent !important;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-indigo:hover {
+    color: #ffffff !important;
+    background-color: var(--primary-indigo) !important;
+    border-color: var(--primary-indigo) !important;
+}

@@ -73,4 +73,28 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Edit Employee Modal Population
+    const editEmployeeModal = document.getElementById('editEmployeeModal');
+    if (editEmployeeModal) {
+        editEmployeeModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const email = button.getAttribute('data-email');
+            const department = button.getAttribute('data-department');
+            const designation = button.getAttribute('data-designation');
+            const salary = button.getAttribute('data-salary');
+
+            const form = editEmployeeModal.querySelector('form');
+            form.action = '/admin/employees/' + id + '/edit';
+
+            editEmployeeModal.querySelector('#edit_id').value = id;
+            editEmployeeModal.querySelector('#edit_name').value = name;
+            editEmployeeModal.querySelector('#edit_email').value = email;
+            editEmployeeModal.querySelector('#edit_department').value = department;
+            editEmployeeModal.querySelector('#edit_designation').value = designation;
+            editEmployeeModal.querySelector('#edit_baseSalary').value = salary;
+        });
+    }
 });

@@ -194,4 +194,34 @@ public class AdminController {
         }
         return "redirect:/admin";
     }
+
+    @PostMapping("/employees/{id}/edit")
+    public String editEmployee(@PathVariable("id") Long id,
+                               @RequestParam("name") String name,
+                               @RequestParam("email") String email,
+                               @RequestParam("department") String department,
+                               @RequestParam("designation") String designation,
+                               @RequestParam("baseSalary") Double baseSalary,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            return "redirect:/login";
+        }
+
+        try {
+            Employee employee = employeeService.getEmployeeById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Employee not found: " + id));
+            employee.setName(name);
+            employee.setEmail(email);
+            employee.setDepartment(department);
+            employee.setDesignation(designation);
+            employee.setBaseSalary(baseSalary);
+            employeeService.saveEmployee(employee);
+            redirectAttributes.addFlashAttribute("successMessage", "Successfully updated employee: " + name);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating employee: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
 }
